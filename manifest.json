@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "SlopFilter",
+  "version": "0.1.0",
+  "description": "The ad blocker for AI-generated content. Detects and dims AI slop so you can read what humans actually wrote.",
+  "permissions": ["storage"],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "SlopFilter"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.reddit.com/*"
+      ],
+      "js": [
+        "src/data/patterns.js",
+        "src/settings/Settings.js",
+        "src/classifiers/BaseClassifier.js",
+        "src/classifiers/HeuristicClassifier.js",
+        "src/platforms/BasePlatform.js",
+        "src/platforms/RedditPlatform.js",
+        "src/renderers/ContentRenderer.js",
+        "src/observers/DOMObserver.js",
+        "src/content.js"
+      ],
+      "css": ["styles/content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
