@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>SlopFilter Test Page</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; max-width: 800px; margin: 40px auto; background: #1a1a1b; color: #d7dadc; }
+    h1 { color: #ff4500; }
+    .comment { padding: 12px 16px; margin: 12px 0; border: 1px solid #343536; border-radius: 6px; background: #1a1a1b; }
+    .comment .author { color: #4fbcff; font-weight: 600; margin-bottom: 6px; }
+    .comment .md { line-height: 1.6; }
+    .comment .md p { margin: 8px 0; }
+    hr { border-color: #343536; margin: 24px 0; }
+  </style>
+</head>
+<body>
+  <h1>SlopFilter Local Test</h1>
+  <p>This page simulates Reddit comment DOM structure to test the extension offline.</p>
+  <hr>
+
+  <!-- Comment 1: Obvious AI slop -->
+  <div class="comment" id="t1_test1">
+    <div class="author">u/definitely_a_bot</div>
+    <div class="md">
+      <p>It's important to note that in today's fast-paced world, we must delve into the multifaceted landscape of modern technology. Furthermore, harnessing the power of cutting-edge innovation is a game-changer that can revolutionize how we navigate the complexities of digital transformation.</p>
+      <p>Moreover, this holistic approach fosters innovation and unlocks the potential for groundbreaking paradigm shifts. Additionally, it's worth noting that staying ahead of the curve requires a nuanced understanding of the ever-evolving tapestry of our digital ecosystem.</p>
+      <p>Ultimately, this comprehensive guide aims to embark on a journey through the seamless integration of these pivotal concepts.</p>
+    </div>
+  </div>
+
+  <!-- Comment 2: Genuine human comment -->
+  <div class="comment" id="t1_test2">
+    <div class="author">u/real_human_person</div>
+    <div class="md">
+      <p>lol yeah I had the same issue. Ended up just reinstalling everything from scratch and it worked. No idea what was wrong tbh. The error message was completely useless, something about a missing dependency that was clearly there.</p>
+      <p>Anyway hope that helps, let me know if you're still stuck.</p>
+    </div>
+  </div>
+
+  <!-- Comment 3: Another AI-heavy comment -->
+  <div class="comment" id="t1_test3">
+    <div class="author">u/ai_enthusiast_42</div>
+    <div class="md">
+      <p>Here are the key benefits of adopting this holistic approach:</p>
+      <p>• Seamlessly integrate cutting-edge solutions into your workflow</p>
+      <p>• Harness the power of AI to revolutionize productivity</p>
+      <p>• Navigate the complex landscape of modern technology</p>
+      <p>• Foster innovation through collaborative synergy</p>
+      <p>• Unlock the full potential of your digital ecosystem</p>
+      <p>Furthermore, it's important to note that this paradigm shift represents a game-changer for organizations. Moreover, delving into these multifaceted concepts reveals a tapestry of interconnected benefits. Ultimately, staying ahead of the curve requires embracing this comprehensive approach.</p>
+    </div>
+  </div>
+
+  <!-- Comment 4: Normal human discussion -->
+  <div class="comment" id="t1_test4">
+    <div class="author">u/casual_redditor</div>
+    <div class="md">
+      <p>Has anyone tried the new version? I'm on 4.2.1 and it keeps crashing when I open settings. Tried clearing cache, didn't help. My buddy has the same phone and his works fine so idk what's different about my setup.</p>
+      <p>Edit: nvm figured it out. Had to disable the accessibility service I was running. Weird interaction but whatever, it works now.</p>
+    </div>
+  </div>
+
+  <!-- Comment 5: Borderline content -->
+  <div class="comment" id="t1_test5">
+    <div class="author">u/helpful_explainer</div>
+    <div class="md">
+      <p>The new update is actually pretty good. The performance improvements are significant — I noticed about 30% faster load times on my machine. The UI changes are a bit controversial but I think they made the right call.</p>
+      <p>The API changes break backward compatibility which is annoying. Some of the documentation is outdated. I'd recommend updating but make sure to test your plugins first.</p>
+    </div>
+  </div>
+
+  <hr>
+  <p style="color: #666; font-size: 12px;">Expected results: Comments 1 and 3 should be flagged as AI. Comments 2, 4, and 5 should NOT be flagged.</p>
+
+  <!-- Load the extension's content scripts for local testing -->
+  <script src="../src/data/patterns.js"></script>
+  <script src="../src/settings/Settings.js"></script>
+  <script src="../src/classifiers/BaseClassifier.js"></script>
+  <script src="../src/classifiers/HeuristicClassifier.js"></script>
+  <script src="../src/platforms/BasePlatform.js"></script>
+  <script src="../src/platforms/RedditPlatform.js"></script>
+  <script src="../src/renderers/ContentRenderer.js"></script>
+  <script src="../src/observers/DOMObserver.js"></script>
+  <link rel="stylesheet" href="../styles/content.css">
+  <script>
+    // Mock chrome API for local testing
+    if (typeof chrome === 'undefined' || !chrome.storage) {
+      window.chrome = {
+        storage: {
+          sync: {
+            get: (defaults) => Promise.resolve(defaults),
+            set: () => Promise.resolve(),
+          },
+          onChanged: { addListener: () => {} },
+        },
+        runtime: {
+          sendMessage: () => Promise.resolve(),
+          onMessage: { addListener: () => {} },
+        },
+      };
+    }
+  </script>
+  <script>
+    // Run content script logic
+    (async function() {
+      const settings = new SlopFilter.Settings();
+      await settings.load();
+
+      // Use old Reddit selectors — our test page uses .comment/.md
+      const classifier = new SlopFilter.HeuristicClassifier(settings.threshold);
+      const renderer = new SlopFilter.ContentRenderer();
+
+      const comments = document.querySelectorAll('.comment');
+      let scanned = 0, flagged = 0;
+
+      comments.forEach(node => {
+        const mdEl = node.querySelector('.md');
+        if (!mdEl) return;
+        const text = mdEl.innerText || mdEl.textContent || '';
+        if (!text.trim()) return;
+
+        const result = classifier.classify(text);
+        scanned++;
+
+        const scoreDisplay = document.createElement('div');
+        scoreDisplay.style.cssText = 'font-size: 11px; color: #888; margin-top: 8px; font-family: monospace;';
+        scoreDisplay.textContent = `Score: ${result.score} | AI: ${result.isAI} | Signals: ${result.signals.filter(s => s.score > 0).map(s => `${s.name}(${s.score}/${s.maxScore})`).join(', ')}`;
+        node.appendChild(scoreDisplay);
+
+        if (result.isAI) {
+          flagged++;
+          renderer.render(node, result, settings.mode);
+        }
+      });
+
+      const summary = document.createElement('div');
+      summary.style.cssText = 'position: fixed; bottom: 16px; right: 16px; background: #2a2a40; color: #fff; padding: 12px 16px; border-radius: 8px; font-size: 13px; z-index: 9999;';
+      summary.innerHTML = `<strong>SlopFilter:</strong> ${scanned} scanned, ${flagged} flagged`;
+      document.body.appendChild(summary);
+    })();
+  </script>
+</body>
+</html>
