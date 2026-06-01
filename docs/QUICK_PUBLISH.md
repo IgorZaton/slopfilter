@@ -11,10 +11,10 @@ Target: **unlisted beta** live in the Chrome Web Store (review usually **1–3 b
 **Privacy policy URL** (after Pages deploys):
 
 ```text
-https://igorzaton.github.io/side-project/privacy-policy.html
+https://igorzaton.github.io/slopfilter/privacy-policy.html
 ```
 
-If the repo is renamed or Pages uses a custom domain, update this URL in the dashboard.
+If the root URL is 404, enable Pages: [Settings → Pages → GitHub Actions](https://github.com/IgorZaton/slopfilter/settings/pages), then run the **Deploy privacy policy to Pages** workflow manually. See [CHROME_WEB_STORE_BETA.md](./CHROME_WEB_STORE_BETA.md#github-pages-setup).
 
 ## Build upload assets (~2 min)
 
@@ -44,7 +44,7 @@ You get:
    - **Language:** English
    - **Icon:** `icons/icon-128.png`
    - **Screenshot:** `store/screenshots/promo-1280x800.png`
-   - **Privacy policy:** `https://igorzaton.github.io/side-project/privacy-policy.html`
+   - **Privacy policy:** `https://igorzaton.github.io/slopfilter/privacy-policy.html`
 3. **Privacy**
    - No user data sold
    - Single purpose: *Help users identify and visually de-emphasize likely AI-generated social posts on Reddit and LinkedIn using on-device classification.*
