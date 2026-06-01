@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="SlopFilter">
+  <rect width="128" height="128" rx="24" fill="#1a1a2e"/>
+  <path d="M32 36h64l-28 28v28L32 64V36z" fill="#4ade80"/>
+  <path d="M44 48h40l-18 18v18L44 66V48z" fill="#1a1a2e" opacity="0.35"/>
+  <circle cx="88" cy="88" r="10" fill="#f87171"/>
+</svg>

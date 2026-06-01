@@ -1,0 +1,67 @@
+{
+  "manifest_version": 3,
+  "name": "SlopFilter",
+  "version": "0.1.0",
+  "description": "The ad blocker for AI-generated content. Detects and dims AI slop so you can read what humans actually wrote.",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "permissions": ["storage", "tabs", "activeTab", "offscreen"],
+  "host_permissions": [
+    "*://reddit.com/*",
+    "*://*.reddit.com/*",
+    "*://linkedin.com/*",
+    "*://*.linkedin.com/*",
+    "https://huggingface.co/*",
+    "https://*.huggingface.co/*",
+    "https://cdn.jsdelivr.net/*"
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "SlopFilter",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://reddit.com/*",
+        "*://*.reddit.com/*",
+        "*://linkedin.com/*",
+        "*://*.linkedin.com/*"
+      ],
+      "js": [
+        "src/data/patterns.js",
+        "src/settings/Settings.js",
+        "src/classifiers/BaseClassifier.js",
+        "src/classifiers/OnnxClassifier.js",
+        "src/classifiers/createClassifier.js",
+        "src/platforms/BasePlatform.js",
+        "src/platforms/RedditPlatform.js",
+        "src/platforms/LinkedInPlatform.js",
+        "src/platforms/createPlatform.js",
+        "src/renderers/ContentRenderer.js",
+        "src/observers/DOMObserver.js",
+        "src/content.js"
+      ],
+      "css": ["styles/content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["vendor/transformers/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

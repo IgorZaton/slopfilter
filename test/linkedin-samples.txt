@@ -1,0 +1,17 @@
+Excited to share that I just started a new role as Senior Engineer at Acme Corp! Grateful for this opportunity and looking forward to the journey ahead. #grateful #newjob
+
+lol this is so true, every standup could've been an email
+
+After 10 years in data engineering, here is what I wish I knew on day one: 1) document your pipelines 2) test edge cases 3) talk to stakeholders early
+
+We are hiring! DM me if you are interested in backend roles. Remote friendly.
+
+“Which commit produced this model?”
+
+If your honest answer is often “probably main, plus some local changes,” you do not have lineage—you have hope.
+
+AIline is an ML experiment tracker that snapshots the *actual* worktree (including uncommitted state), ties it to DVC-managed data and MLflow runs, and keeps a restore-friendly record of what executed.
+
+One command pattern: `ailine track -- your training command`
+
+Reproducibility is a workflow, not a slogan.

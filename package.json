@@ -1,0 +1,21 @@
+{
+  "name": "slopfilter",
+  "private": true,
+  "version": "0.1.0",
+  "description": "SlopFilter extension ML runtime build tooling",
+  "scripts": {
+    "build:ml": "node scripts/build-ml.mjs",
+    "build:icons": "node scripts/generate-icons.mjs",
+    "build": "npm run build:ml && npm run build:icons",
+    "store:screenshot": "node scripts/generate-store-screenshot.mjs",
+    "store:assets": "npm run package && npm run store:screenshot",
+    "package": "npm run build && node scripts/package-extension.mjs --channel=beta",
+    "package:release": "npm run build && node scripts/package-extension.mjs --channel=release"
+  },
+  "devDependencies": {
+    "@huggingface/transformers": "^3.8.1",
+    "archiver": "^7.0.1",
+    "esbuild": "^0.25.5",
+    "sharp": "^0.34.2"
+  }
+}

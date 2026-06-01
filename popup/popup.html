@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="sf-popup">
+    <header class="sf-header">
+      <h1 class="sf-title">SlopFilter</h1>
+      <label class="sf-toggle">
+        <input type="checkbox" id="sf-enabled" checked>
+        <span class="sf-toggle-slider"></span>
+      </label>
+    </header>
+
+    <p class="sf-tagline">Filter AI-generated content</p>
+
+    <section class="sf-section">
+      <label class="sf-label" for="sf-sensitivity">Sensitivity</label>
+      <div class="sf-radio-group" id="sf-sensitivity">
+        <label class="sf-radio"><input type="radio" name="sensitivity" value="low"><span>Low</span></label>
+        <label class="sf-radio"><input type="radio" name="sensitivity" value="medium" checked><span>Medium</span></label>
+        <label class="sf-radio"><input type="radio" name="sensitivity" value="high"><span>High</span></label>
+      </div>
+      <p class="sf-hint" id="sf-sensitivity-hint"></p>
+    </section>
+
+    <section class="sf-section">
+      <label class="sf-label" for="sf-mode">Display Mode</label>
+      <div class="sf-radio-group" id="sf-mode">
+        <label class="sf-radio"><input type="radio" name="mode" value="dim" checked><span>Dim</span></label>
+        <label class="sf-radio"><input type="radio" name="mode" value="hide"><span>Hide</span></label>
+        <label class="sf-radio"><input type="radio" name="mode" value="badge"><span>Badge</span></label>
+      </div>
+    </section>
+
+    <section class="sf-stats">
+      <div class="sf-stat">
+        <span class="sf-stat-value" id="sf-scanned">0</span>
+        <span class="sf-stat-label">Scanned</span>
+      </div>
+      <div class="sf-stat">
+        <span class="sf-stat-value" id="sf-flagged">0</span>
+        <span class="sf-stat-label">Flagged</span>
+      </div>
+    </section>
+
+    <footer class="sf-footer">
+      <span>v0.1.0 &middot; No data leaves your browser</span>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

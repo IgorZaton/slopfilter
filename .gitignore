@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Hugging Face / transformers download cache (if created outside node_modules)
+.cache/
+
+# Build outputs (run: npm run build)
+dist/
+offscreen/offscreen.bundle.js
+vendor/
+
+# Generated store / UI assets (run: npm run build:icons && npm run store:screenshot)
+icons/icon-16.png
+icons/icon-48.png
+icons/icon-128.png
+store/screenshots/
+
+# Icon source lives in icons/aiicon.jpg; root copy is optional local duplicate
+/aiicon.jpg
+
+# Packaged extension artifacts
+*.crx
+*.pem
+
+# Environment and secrets
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor / tooling
+*.log
+npm-debug.log*
