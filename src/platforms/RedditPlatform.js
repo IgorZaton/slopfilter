@@ -13,17 +13,28 @@ SlopFilter.RedditPlatform = class RedditPlatform
   // Selector groups — easily updatable when Reddit changes DOM
   static SELECTORS = Object.freeze({
     newReddit: {
-      comment: 'shreddit-comment',
-      post:    'shreddit-post',
+      comment: [
+        'shreddit-comment',
+        'div[data-testid="comment"]',
+        '[data-testid="comment"]',
+      ],
+      post: [
+        'shreddit-post',
+        'article',
+        'div[data-testid="post-container"]',
+      ],
       textBody: [
         '[slot="comment"] .md',
         '[id$="-comment-rtjson-content"]',
         '.RichTextJSON-root',
         'div[data-testid="comment"] .md',
+        '[data-testid="comment"] [data-click-id="text"]',
         '.Comment .md',
       ],
       postBody: [
         '[slot="text-body"]',
+        '[data-click-id="text"]',
+        '[data-testid="post-content"] [data-click-id="text"]',
         'div[data-testid="post-content"] .md',
         '.Post .md',
       ],
@@ -51,22 +62,33 @@ SlopFilter.RedditPlatform = class RedditPlatform
       : RedditPlatform.SELECTORS.newReddit;
 
     const nodes = [];
+    const seen = new Set();
+
+    const pushUnique = (node) => {
+      if (!node || seen.has(node)) return;
+      if (this.isProcessed(node)) return;
+      seen.add(node);
+      nodes.push(node);
+    };
 
     // Comments
-    const comments = document.querySelectorAll(sel.comment);
-    comments.forEach(c => {
-      if (!this.isProcessed(c)) nodes.push(c);
+    const commentSelectors = Array.isArray(sel.comment) ? sel.comment : [sel.comment];
+    commentSelectors.forEach((selector) => {
+      const comments = document.querySelectorAll(selector);
+      comments.forEach(c => pushUnique(c));
     });
 
-    // Posts (new Reddit only)
-    if (!this._isOldReddit && sel.post) {
-      const posts = document.querySelectorAll(sel.post);
-      posts.forEach(p => {
-        if (!this.isProcessed(p)) nodes.push(p);
+    // Posts
+    if (sel.post) {
+      const postSelectors = Array.isArray(sel.post) ? sel.post : [sel.post];
+      postSelectors.forEach((selector) => {
+        const posts = document.querySelectorAll(selector);
+        posts.forEach(p => pushUnique(p));
       });
     }
 
-    return nodes;
+    // Keep only nodes with some readable text to avoid noisy wrappers.
+    return nodes.filter((node) => this.extractText(node).length >= 20);
   }
 
   extractText(node) {
@@ -74,9 +96,8 @@ SlopFilter.RedditPlatform = class RedditPlatform
       ? RedditPlatform.SELECTORS.oldReddit
       : RedditPlatform.SELECTORS.newReddit;
 
-    const bodySelectors = node.tagName.toLowerCase() === 'shreddit-post'
-      ? sel.postBody
-      : sel.textBody;
+    const isPostNode = this._matchesAny(node, sel.post);
+    const bodySelectors = isPostNode ? sel.postBody : sel.textBody;
 
     // Try each selector until we find text content
     for (const selector of bodySelectors) {
@@ -133,5 +154,18 @@ SlopFilter.RedditPlatform = class RedditPlatform
       results = node.shadowRoot.querySelectorAll(selector);
     }
     return results;
+  }
+
+  /** @private */
+  _matchesAny(node, selectors) {
+    if (!selectors) return false;
+    const list = Array.isArray(selectors) ? selectors : [selectors];
+    return list.some((selector) => {
+      try {
+        return node.matches(selector);
+      } catch {
+        return false;
+      }
+    });
   }
 };

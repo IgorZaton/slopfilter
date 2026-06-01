@@ -7,6 +7,7 @@
  */
 
 let currentStats = { scanned: 0, flagged: 0 };
+let offscreenReadyPromise = null;
 
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   switch (msg.type) {
@@ -19,6 +20,29 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     case 'stats:get':
       sendResponse(currentStats);
       break;
+
+    case 'ai:classify':
+      classifyWithOnnx(msg.text).then(sendResponse).catch((err) => {
+        sendResponse({
+          ok: false,
+          error: err && err.message ? err.message : String(err),
+        });
+      });
+      break;
+
+    case 'ai:warmup':
+      ensureOffscreenDocument().then(() => {
+        sendResponse({ ok: true });
+      }).catch((err) => {
+        sendResponse({
+          ok: false,
+          error: err && err.message ? err.message : String(err),
+        });
+      });
+      break;
+
+    case 'ai:classify:offscreen':
+      return false;
 
     default:
       sendResponse({ error: 'unknown message type' });
@@ -33,4 +57,53 @@ function updateBadge(stats) {
 
   chrome.action.setBadgeText({ text }).catch(() => {});
   chrome.action.setBadgeBackgroundColor({ color }).catch(() => {});
+}
+
+async function classifyWithOnnx(text) {
+  await ensureOffscreenDocument();
+  return new Promise((resolve, reject) => {
+    try {
+      chrome.runtime.sendMessage(
+        {
+          type: 'ai:classify:offscreen',
+          text,
+        },
+        (response) => {
+          if (chrome.runtime?.lastError) {
+            reject(new Error(chrome.runtime.lastError.message));
+            return;
+          }
+          resolve(response || { ok: false, error: 'no response from offscreen runtime' });
+        }
+      );
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+async function ensureOffscreenDocument() {
+  if (offscreenReadyPromise) return offscreenReadyPromise;
+
+  offscreenReadyPromise = (async () => {
+    const url = 'offscreen/offscreen.html';
+
+    if (chrome.offscreen?.hasDocument) {
+      const exists = await chrome.offscreen.hasDocument();
+      if (exists) return;
+    }
+
+    await chrome.offscreen.createDocument({
+      url,
+      reasons: ['WORKERS'],
+      justification: 'Run local ONNX classifier without service worker suspension',
+    });
+  })();
+
+  try {
+    await offscreenReadyPromise;
+  } catch (err) {
+    offscreenReadyPromise = null;
+    throw err;
+  }
 }

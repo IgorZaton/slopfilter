@@ -1,0 +1,9 @@
+“Which commit produced this model?”
+
+If your honest answer is often “probably main, plus some local changes,” you do not have lineage—you have hope.
+
+AIline is an ML experiment tracker that snapshots the *actual* worktree (including uncommitted state), ties it to DVC-managed data and MLflow runs, and keeps a restore-friendly record of what executed.
+
+One command pattern: `ailine track -- your training command`
+
+Reproducibility is a workflow, not a slogan.

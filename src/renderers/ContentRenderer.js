@@ -29,23 +29,41 @@ SlopFilter.ContentRenderer = class ContentRenderer {
   });
 
   /**
+   * @param {{ badgeMin: number, dimMin: number }} [thresholds]
+   */
+  constructor(thresholds = SlopFilter.DISPLAY_THRESHOLDS) {
+    this.setThresholds(thresholds);
+  }
+
+  get badgeMin() { return this._badgeMin; }
+  get dimMin() { return this._dimMin; }
+
+  setThresholds({ badgeMin, dimMin } = SlopFilter.DISPLAY_THRESHOLDS) {
+    this._badgeMin = Math.max(0, Math.min(100, badgeMin));
+    this._dimMin = Math.max(this._badgeMin, Math.min(100, dimMin));
+  }
+
+  /**
    * Apply visual treatment to a node.
    * @param {HTMLElement}          node   The content container.
    * @param {ClassificationResult} result Output from a classifier.
    * @param {string}               mode   'dim' | 'hide' | 'badge'
    */
   render(node, result, mode) {
-    if (!result.isAI) return;
+    const score = result.score;
+    if (score < this.badgeMin) return;
 
     this.clear(node);
     node.classList.add(ContentRenderer.CLASSES.flagged);
-    node.classList.add(this._scoreClass(result.score));
+    node.classList.add(this._scoreClass(score));
+    this._applyBadge(node, score);
 
-    switch (mode) {
-      case 'dim':  this._applyDim(node, result); break;
-      case 'hide': this._applyHide(node, result); break;
-      case 'badge': this._applyBadge(node, result); break;
-      default: this._applyDim(node, result);
+    if (score < this.dimMin) return;
+
+    if (mode === 'hide') {
+      this._applyHide(node, result);
+    } else if (mode === 'dim') {
+      node.classList.add(ContentRenderer.CLASSES.dimmed);
     }
   }
 
@@ -76,12 +94,6 @@ SlopFilter.ContentRenderer = class ContentRenderer {
   // --- Mode implementations ---
 
   /** @private */
-  _applyDim(node, result) {
-    node.classList.add(ContentRenderer.CLASSES.dimmed);
-    this._attachBadge(node, result.score);
-  }
-
-  /** @private */
   _applyHide(node, result) {
     node.classList.add(ContentRenderer.CLASSES.hidden);
 
@@ -100,9 +112,9 @@ SlopFilter.ContentRenderer = class ContentRenderer {
   }
 
   /** @private */
-  _applyBadge(node, result) {
+  _applyBadge(node, score) {
     node.classList.add(ContentRenderer.CLASSES.badged);
-    this._attachBadge(node, result.score);
+    this._attachBadge(node, score);
   }
 
   /** @private */

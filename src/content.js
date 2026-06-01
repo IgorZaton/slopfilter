@@ -11,19 +11,48 @@ if (typeof globalThis !== "undefined") globalThis.SlopFilter = SlopFilter;
 (async function initSlopFilter() {
   'use strict';
 
+  const debug = createDebugOverlay();
+  debug.set('init');
+
   const settings = new SlopFilter.Settings();
   await settings.load();
+  debug.set(`loaded (enabled=${settings.enabled})`);
 
-  const platform   = new SlopFilter.RedditPlatform();
-  const classifier = new SlopFilter.HeuristicClassifier(settings.threshold);
-  const renderer   = new SlopFilter.ContentRenderer();
+  const platform   = SlopFilter.createPlatform();
+  const classifier = SlopFilter.createClassifier({
+    threshold: settings.threshold,
+  });
+  const renderer   = new SlopFilter.ContentRenderer(settings.displayThresholds);
 
   let stats = { scanned: 0, flagged: 0 };
+  let scanInProgress = false;
+  let scanQueued = false;
 
-  function scanPage() {
-    if (!settings.enabled) return;
+  try {
+    chrome.runtime.sendMessage({ type: 'ai:warmup' });
+  } catch {
+    // Ignore warmup errors; classify will surface runtime failures.
+  }
 
-    const nodes = platform.getContentNodes();
+  async function scanPage() {
+    if (scanInProgress) {
+      scanQueued = true;
+      return;
+    }
+
+    scanInProgress = true;
+
+    try {
+    if (!settings.enabled) {
+      debug.set('disabled');
+      return;
+    }
+
+    let nodes = platform.getContentNodes();
+    if (nodes.length === 0) {
+      nodes = getFallbackNodes(platform);
+    }
+    debug.set(`${platform.name} nodes=${nodes.length}`);
 
     for (const node of nodes) {
       if (platform.isProcessed(node)) continue;
@@ -34,20 +63,64 @@ if (typeof globalThis !== "undefined") globalThis.SlopFilter = SlopFilter;
         continue;
       }
 
-      const result = classifier.classify(text);
+      let result;
+      try {
+        result = await classifier.classify(text);
+      } catch (err) {
+        platform.markProcessed(node, 0);
+        debug.set(`onnx error: ${err && err.message ? err.message : String(err)}`);
+        continue;
+      }
+
       platform.markProcessed(node, result.score);
       stats.scanned++;
 
-      if (result.isAI) {
+      if (result.score >= renderer.badgeMin) {
         stats.flagged++;
         renderer.render(node, result, settings.mode);
       }
     }
 
     broadcastStats();
+    debug.set(`scanned=${stats.scanned} flagged=${stats.flagged}`);
+    } finally {
+      scanInProgress = false;
+      if (scanQueued) {
+        scanQueued = false;
+        scanPage().catch(() => {});
+      }
+    }
+  }
+
+  function getFallbackNodes(platform) {
+    if (platform.name === 'LinkedIn') {
+      return Array.from(document.querySelectorAll(
+        [
+          '[data-testid="expandable-text-box"]',
+          '[data-test-id="expandable-text-box"]',
+          '.feed-shared-update-v2[data-urn]',
+          'div[data-urn*="activity"]',
+          'div[data-urn*="ugcPost"]',
+          '.comments-comment-item',
+        ].join(', ')
+      ));
+    }
+
+    return Array.from(document.querySelectorAll(
+      'article, [data-testid="post-container"], [data-testid="comment"], p'
+    ));
   }
 
   function broadcastStats() {
+    try {
+      chrome.storage.local.set({
+        sfStats: { ...stats },
+        sfStatsUpdatedAt: Date.now(),
+      });
+    } catch {
+      // Ignore storage write errors.
+    }
+
     try {
       chrome.runtime.sendMessage({
         type: 'stats:update',
@@ -58,12 +131,29 @@ if (typeof globalThis !== "undefined") globalThis.SlopFilter = SlopFilter;
     }
   }
 
+  // Allow popup to request stats directly from the active tab.
+  chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+    if (msg?.type === 'stats:get-tab') {
+      sendResponse({ ...stats });
+      return true;
+    }
+
+    if (msg?.type === 'stats:rescan') {
+      fullRescan();
+      sendResponse({ ok: true, ...stats });
+      return true;
+    }
+
+    return false;
+  });
+
   function fullRescan() {
     renderer.clearAll();
     platform.clearAllMarks();
     stats = { scanned: 0, flagged: 0 };
     classifier.threshold = settings.threshold;
-    scanPage();
+    renderer.setThresholds(settings.displayThresholds);
+    scanPage().catch(() => {});
   }
 
   // React to settings changes from the popup
@@ -79,6 +169,50 @@ if (typeof globalThis !== "undefined") globalThis.SlopFilter = SlopFilter;
   });
 
   // Start observing the DOM for dynamic content
-  const observer = new SlopFilter.DOMObserver(scanPage, 400);
+  const observer = new SlopFilter.DOMObserver(() => {
+    scanPage().catch(() => {});
+  }, 400);
   observer.start();
-})();
+
+  function createDebugOverlay() {
+    const el = document.createElement('div');
+    el.id = 'sf-debug';
+    el.style.cssText = [
+      'position:fixed',
+      'right:12px',
+      'bottom:12px',
+      'z-index:2147483647',
+      'background:#111',
+      'color:#0f0',
+      'font:12px/1.3 monospace',
+      'padding:6px 8px',
+      'border:1px solid #2d2',
+      'border-radius:6px',
+      'opacity:0.9',
+    ].join(';');
+    document.documentElement.appendChild(el);
+    return {
+      set(text) {
+        el.textContent = `SlopFilter ${text}`;
+      },
+    };
+  }
+})().catch((err) => {
+  const el = document.createElement('div');
+  el.id = 'sf-debug-error';
+  el.style.cssText = [
+    'position:fixed',
+    'right:12px',
+    'bottom:12px',
+    'z-index:2147483647',
+    'background:#300',
+    'color:#f88',
+    'font:12px/1.3 monospace',
+    'padding:6px 8px',
+    'border:1px solid #f66',
+    'border-radius:6px',
+    'max-width:50vw',
+  ].join(';');
+  el.textContent = `SlopFilter error: ${err && err.message ? err.message : String(err)}`;
+  document.documentElement.appendChild(el);
+});

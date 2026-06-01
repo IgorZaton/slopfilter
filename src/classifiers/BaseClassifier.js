@@ -12,6 +12,12 @@ if (typeof globalThis !== "undefined") globalThis.SlopFilter = SlopFilter;
  *
  * @abstract
  */
+/** Default display cutoffs (medium sensitivity); overridden per user setting. */
+SlopFilter.DISPLAY_THRESHOLDS = Object.freeze({
+  badgeMin: 65,
+  dimMin: 92,
+});
+
 SlopFilter.BaseClassifier = class BaseClassifier {
 
   /**

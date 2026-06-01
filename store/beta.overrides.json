@@ -1,0 +1,7 @@
+{
+  "name": "SlopFilter (Beta)",
+  "description": "Beta preview — detects likely AI-generated posts on Reddit and LinkedIn using on-device ML. Dim, hide, or badge flagged content. Feedback welcome.",
+  "action": {
+    "default_title": "SlopFilter (Beta)"
+  }
+}

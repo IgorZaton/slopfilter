@@ -130,6 +130,13 @@ body {
   border-color: #4ade80;
 }
 
+.sf-hint {
+  margin-top: 6px;
+  font-size: 10px;
+  color: #777;
+  line-height: 1.35;
+}
+
 /* --- Stats --- */
 
 .sf-stats {

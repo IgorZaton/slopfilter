@@ -4,9 +4,9 @@ The ad blocker for AI-generated content. Detects and dims AI slop so you can rea
 
 ## What it does
 
-SlopFilter is a browser extension that detects likely AI-generated text on social platforms using **local linguistic heuristics** — no cloud APIs, no data leaves your browser.
+SlopFilter is a browser extension that detects likely AI-generated text on social platforms using a **local TMR ONNX classifier** — no cloud APIs, no data leaves your browser.
 
-**Supported platforms:** Reddit (more coming soon)
+**Supported platforms:** Reddit, LinkedIn
 
 **Display modes:**
 - **Dim** — reduces flagged content to 25% opacity; hover to read
@@ -15,27 +15,39 @@ SlopFilter is a browser extension that detects likely AI-generated text on socia
 
 ## How detection works
 
-Text is scored 0–100 using five independent signals:
+Each post is scored **0–100** by `onnx-community/tmr-ai-text-detector-ONNX` (quantized q8).
 
-| Signal | Max Score | What it detects |
-|--------|-----------|----------------|
-| Filler phrases | 35 | "delve into", "it's worth noting", "in today's fast-paced world"… |
-| Sentence uniformity | 25 | AI writes suspiciously even-length sentences |
-| Structural patterns | 20 | Em-dash abuse, excessive bullet/numbered lists |
-| Repetitive openers | 10 | "The… The… The… This… This…" |
-| Transition abuse | 10 | Overuse of "Furthermore", "Moreover", "Additionally"… |
+**Sensitivity** (popup) sets badge and dim/hide cutoffs:
 
-Score 60+ = likely AI (medium sensitivity). Adjustable via popup.
+| Sensitivity | Badge | Dim / hide |
+|-------------|------:|-----------:|
+| High | 50+ | 86+ |
+| Medium (default) | 65+ | 92+ |
+| Low | 80+ | 96+ |
+
+Posts between the badge and dim thresholds get a badge only. In **badge** display mode, dim/hide is never applied regardless of score.
 
 ## Install for development
 
 1. Clone this repository
-2. Open `chrome://extensions` in Chrome
-3. Enable **Developer mode** (top right)
-4. Click **Load unpacked** and select this project folder
-5. Navigate to Reddit — the extension is active
+2. Run `npm install`
+3. Run `npm run build` (ML bundle + icons)
+4. Open `chrome://extensions` in Chrome
+5. Enable **Developer mode** (top right)
+6. Click **Load unpacked** and select this project folder
+7. Navigate to Reddit or LinkedIn — the extension is active
 
-No build step. No npm. No dependencies.
+The ONNX model is downloaded on first classification and then cached by the browser.
+
+## Chrome Web Store (beta)
+
+**Publish ASAP:** [docs/QUICK_PUBLISH.md](docs/QUICK_PUBLISH.md)
+
+```bash
+npm run store:assets   # ZIP + screenshot + icons
+```
+
+Upload `dist/slopfilter-<version>.zip`. More detail: [docs/CHROME_WEB_STORE_BETA.md](docs/CHROME_WEB_STORE_BETA.md).
 
 ## Architecture
 
@@ -43,26 +55,30 @@ No build step. No npm. No dependencies.
 src/
 ├── classifiers/
 │   ├── BaseClassifier.js      ← Abstract base (extend for new strategies)
-│   └── HeuristicClassifier.js ← Linguistic heuristic implementation
+│   ├── OnnxClassifier.js    ← Background bridge to ONNX runtime
+│   └── createClassifier.js    ← Classifier factory
+├── offscreen/
+│   ├── offscreen.html         ← Persistent MV3 offscreen document
+│   ├── offscreen.runtime.js   ← ONNX model runtime source
+│   └── offscreen.bundle.js    ← Built runtime (from npm run build:ml)
 ├── platforms/
 │   ├── BasePlatform.js        ← Abstract base (extend for new sites)
-│   └── RedditPlatform.js      ← Reddit DOM adapter
+│   ├── RedditPlatform.js      ← Reddit DOM adapter
+│   ├── LinkedInPlatform.js    ← LinkedIn DOM adapter
+│   └── createPlatform.js      ← Hostname → platform factory
 ├── renderers/
 │   └── ContentRenderer.js     ← Visual treatment (dim/hide/badge)
 ├── observers/
 │   └── DOMObserver.js         ← MutationObserver with debouncing
 ├── settings/
 │   └── Settings.js            ← chrome.storage.sync wrapper
-├── data/
-│   └── patterns.js            ← Detection pattern data
 └── content.js                 ← Composition root (wires everything)
 ```
 
 **Extending the classifier:**
 ```js
-class LLMClassifier extends SlopFilter.BaseClassifier {
-  classify(text) {
-    // Your LLM-based classification logic
+class MyClassifier extends SlopFilter.BaseClassifier {
+  async classify(text) {
     return { score, isAI, signals };
   }
 }
@@ -81,5 +97,12 @@ class LinkedInPlatform extends SlopFilter.BasePlatform {
 
 - Pure JavaScript (ES2020+)
 - Chrome Manifest V3
-- No external dependencies
-- No build step
+- `@huggingface/transformers` (TMR ONNX q8)
+- Minimal esbuild step for offscreen ML runtime
+
+## Troubleshooting
+
+- Reload the extension after `npm run build:ml`.
+- First classification can take longer while the model downloads (~100 MB).
+- Check the green debug overlay (bottom-right): `onnx error: ...` means runtime/model failed.
+- If `LinkedIn nodes=0`, DOM selectors may need updating for your feed layout.

@@ -13,10 +13,11 @@ SlopFilter.Settings = class Settings {
     sensitivity: 'medium',
   });
 
+  /** Badge and dim/hide cutoffs per sensitivity (higher sensitivity = lower thresholds). */
   static SENSITIVITY_THRESHOLDS = Object.freeze({
-    low: 80,
-    medium: 60,
-    high: 40,
+    high:   Object.freeze({ badgeMin: 50, dimMin: 86 }),
+    medium: Object.freeze({ badgeMin: 65, dimMin: 92 }),
+    low:    Object.freeze({ badgeMin: 80, dimMin: 96 }),
   });
 
   constructor() {
@@ -26,7 +27,7 @@ SlopFilter.Settings = class Settings {
 
   async load() {
     try {
-      const stored = await chrome.storage.sync.get(Settings.DEFAULTS);
+      const stored = await this._storageGet(Settings.DEFAULTS);
       Object.assign(this._cache, stored);
     } catch {
       // Fallback to defaults on error (e.g. in tests without chrome API)
@@ -37,7 +38,7 @@ SlopFilter.Settings = class Settings {
   async save(partial) {
     Object.assign(this._cache, partial);
     try {
-      await chrome.storage.sync.set(this._cache);
+      await this._storageSet(this._cache);
     } catch {
       // Silently fail if storage is unavailable
     }
@@ -48,9 +49,14 @@ SlopFilter.Settings = class Settings {
   get mode()        { return this._cache.mode; }
   get sensitivity() { return this._cache.sensitivity; }
 
-  get threshold() {
+  get displayThresholds() {
     return Settings.SENSITIVITY_THRESHOLDS[this._cache.sensitivity]
       ?? Settings.SENSITIVITY_THRESHOLDS.medium;
+  }
+
+  /** Classifier flag threshold; matches badge cutoff for the active sensitivity. */
+  get threshold() {
+    return this.displayThresholds.badgeMin;
   }
 
   onChange(fn) {
@@ -61,7 +67,43 @@ SlopFilter.Settings = class Settings {
   }
 
   _notify() {
-    const snapshot = { ...this._cache, threshold: this.threshold };
+    const snapshot = {
+      ...this._cache,
+      threshold: this.threshold,
+      displayThresholds: this.displayThresholds,
+    };
     this._listeners.forEach(fn => fn(snapshot));
+  }
+
+  _storageGet(defaults) {
+    return new Promise((resolve, reject) => {
+      try {
+        chrome.storage.sync.get(defaults, (items) => {
+          if (chrome.runtime?.lastError) {
+            reject(new Error(chrome.runtime.lastError.message));
+            return;
+          }
+          resolve(items || { ...defaults });
+        });
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
+  _storageSet(values) {
+    return new Promise((resolve, reject) => {
+      try {
+        chrome.storage.sync.set(values, () => {
+          if (chrome.runtime?.lastError) {
+            reject(new Error(chrome.runtime.lastError.message));
+            return;
+          }
+          resolve();
+        });
+      } catch (err) {
+        reject(err);
+      }
+    });
   }
 };
