@@ -1,9 +1,10 @@
-import { env, pipeline } from '@huggingface/transformers';
+import { env, pipeline } from '../vendor/transformers/transformers.min.js';
 
 env.allowLocalModels = false;
 env.allowRemoteModels = true;
 env.useBrowserCache = true;
-env.backends.onnx.wasm.wasmPaths = chrome.runtime.getURL('vendor/transformers/');
+
+await configureOnnxWasm();
 
 const MODEL_ID = 'onnx-community/tmr-ai-text-detector-ONNX';
 const DTYPE = 'q8';
@@ -12,6 +13,18 @@ let classifierPromise = null;
 let chain = Promise.resolve();
 
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg?.type === 'ai:warmup:offscreen') {
+    chain = chain.then(() => getClassifier()).then(() => {
+      sendResponse({ ok: true });
+    }).catch((err) => {
+      sendResponse({
+        ok: false,
+        error: err && err.message ? err.message : String(err),
+      });
+    });
+    return true;
+  }
+
   if (msg?.type !== 'ai:classify:offscreen') {
     return false;
   }
@@ -28,11 +41,28 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   return true;
 });
 
+async function configureOnnxWasm() {
+  const base = chrome.runtime.getURL('vendor/transformers/');
+  const onnxWasm = env.backends.onnx.wasm;
+
+  onnxWasm.wasmPaths = base;
+  onnxWasm.numThreads = 1;
+  onnxWasm.proxy = false;
+
+  const wasmUrl = `${base}ort-wasm-simd-threaded.jsep.wasm`;
+  const response = await fetch(wasmUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to load ONNX wasm (${response.status}) from ${wasmUrl}`);
+  }
+  onnxWasm.wasmBinary = new Uint8Array(await response.arrayBuffer());
+}
+
 async function getClassifier() {
   if (classifierPromise) return classifierPromise;
 
   classifierPromise = pipeline('text-classification', MODEL_ID, {
     dtype: DTYPE,
+    device: 'wasm',
   });
 
   try {

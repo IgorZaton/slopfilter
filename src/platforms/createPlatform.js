@@ -16,5 +16,5 @@ SlopFilter.createPlatform = function createPlatform() {
     return new SlopFilter.RedditPlatform();
   }
 
-  return new SlopFilter.RedditPlatform();
+  return new SlopFilter.GenericPlatform();
 };

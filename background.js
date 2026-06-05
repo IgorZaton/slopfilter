@@ -31,14 +31,17 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       break;
 
     case 'ai:warmup':
-      ensureOffscreenDocument().then(() => {
-        sendResponse({ ok: true });
-      }).catch((err) => {
-        sendResponse({
-          ok: false,
-          error: err && err.message ? err.message : String(err),
+      ensureOffscreenDocument()
+        .then(() => warmupOffscreenRuntime())
+        .then(() => {
+          sendResponse({ ok: true });
+        })
+        .catch((err) => {
+          sendResponse({
+            ok: false,
+            error: err && err.message ? err.message : String(err),
+          });
         });
-      });
       break;
 
     case 'ai:classify:offscreen':
@@ -59,23 +62,28 @@ function updateBadge(stats) {
   chrome.action.setBadgeBackgroundColor({ color }).catch(() => {});
 }
 
+async function warmupOffscreenRuntime() {
+  return sendOffscreenMessage({ type: 'ai:warmup:offscreen' });
+}
+
 async function classifyWithOnnx(text) {
   await ensureOffscreenDocument();
+  return sendOffscreenMessage({
+    type: 'ai:classify:offscreen',
+    text,
+  });
+}
+
+function sendOffscreenMessage(payload) {
   return new Promise((resolve, reject) => {
     try {
-      chrome.runtime.sendMessage(
-        {
-          type: 'ai:classify:offscreen',
-          text,
-        },
-        (response) => {
-          if (chrome.runtime?.lastError) {
-            reject(new Error(chrome.runtime.lastError.message));
-            return;
-          }
-          resolve(response || { ok: false, error: 'no response from offscreen runtime' });
+      chrome.runtime.sendMessage(payload, (response) => {
+        if (chrome.runtime?.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+          return;
         }
-      );
+        resolve(response || { ok: false, error: 'no response from offscreen runtime' });
+      });
     } catch (err) {
       reject(err);
     }

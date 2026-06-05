@@ -1,10 +1,8 @@
-# Chrome Web Store — unlisted beta
+# Chrome Web Store
 
 **Fast path:** follow **[QUICK_PUBLISH.md](./QUICK_PUBLISH.md)** (~30 min of your time + 1–3 day review).
 
-This guide covers publishing **SlopFilter (Beta)** as an **unlisted** item (install via direct link, not searchable).
-
-For a future **public** release, use `npm run package:release` and update the listing name/description to drop “Beta”.
+This guide covers publishing **SlopFilter** to the Chrome Web Store.
 
 ## Prerequisites
 
@@ -32,16 +30,16 @@ dist/slopfilter-<version>.zip   ← upload this file
 Verify locally before uploading:
 
 1. `chrome://extensions` → Developer mode → **Load unpacked** → select `dist/slopfilter-<version>/`
-2. Open Reddit or LinkedIn and confirm classification works (first run downloads ~100 MB model).
+2. Open a supported social site and confirm classification works (first run downloads ~100 MB model).
 
-## Dashboard checklist (unlisted beta)
+## Dashboard checklist
 
 | Field | Suggested value |
 |--------|------------------|
-| **Visibility** | Unlisted |
-| **Name** | SlopFilter (Beta) — applied automatically by `npm run package` |
-| **Summary** | Beta: dim or hide likely AI posts on Reddit & LinkedIn. On-device ML, no cloud API. |
-| **Description** | See [`store/listing-beta.md`](../store/listing-beta.md) |
+| **Visibility** | Unlisted or Public |
+| **Name** | SlopFilter |
+| **Summary** | Spot likely AI posts on social feeds. On-device ML, no cloud API. |
+| **Description** | See [`store/listing.md`](../store/listing.md) |
 | **Category** | Productivity |
 | **Language** | English |
 | **Privacy policy** | `https://igorzaton.github.io/slopfilter/privacy-policy.html` |
@@ -55,12 +53,12 @@ Verify locally before uploading:
 | `storage` | Save user settings and local scan stats. |
 | `tabs` / `activeTab` | Read tab URL to show per-site stats in the popup. |
 | `offscreen` | Run ONNX inference in a persistent document (MV3 service workers cannot host WASM ML). |
-| Reddit / LinkedIn hosts | Inject content script to read posts and apply dim/hide/badge. |
+| Social / forum hosts | Inject content script to read posts and apply dim/hide/badge. |
 | Hugging Face / jsDelivr | One-time download of open-source ONNX model weights and tokenizer config; cached locally. |
 
 ### Single purpose
 
-> Help users identify and visually de-emphasize likely AI-generated social posts on Reddit and LinkedIn using on-device classification.
+> Help users identify and visually de-emphasize likely AI-generated social posts using on-device classification.
 
 ## GitHub Pages setup
 
@@ -78,7 +76,7 @@ The workflow only auto-runs on pushes to `main` that touch `docs/**` or `.github
 
 ## Versioning
 
-Chrome requires `manifest.version` to be **dot-separated integers** (e.g. `0.1.0`, `0.1.1`). Beta channel is indicated by the extension **name** “(Beta)”, not the version string.
+Chrome requires `manifest.version` to be **dot-separated integers** (e.g. `1.0.0`, `1.0.1`).
 
 Bump `version` in `manifest.json` for each store upload.
 
@@ -86,18 +84,11 @@ Bump `version` in `manifest.json` for each store upload.
 
 | Script | Purpose |
 |--------|---------|
-| `npm run build:ml` | Bundle offscreen ONNX runtime + copy WASM to `vendor/` |
-| `npm run build:icons` | Render `icons/icon-*.png` from `icons/icon.svg` |
+| `npm run build:ml` | Copy offscreen ONNX runtime + WASM to `vendor/` |
+| `npm run build:icons` | Render `icons/icon-*.png` from `icons/myicon.png` |
 | `npm run build` | Both of the above |
-| `npm run package` | `build` + beta ZIP (`--channel=beta`, default) |
-| `npm run package:release` | `build` + ZIP without beta name overrides |
+| `npm run package` | `build` + store upload ZIP |
 
 ## After approval
 
-Share the **unlisted install link** from the developer dashboard with beta testers only.
-
-When ready for a public listing:
-
-1. Remove or stop using `store/beta.overrides.json` via `npm run package:release`.
-2. Update store listing copy and screenshots.
-3. Change visibility from Unlisted to Public and submit for review.
+Share the install link from the developer dashboard, or set visibility to **Public** for searchable listing.

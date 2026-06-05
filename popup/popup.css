@@ -93,6 +93,16 @@ body {
   margin-bottom: 6px;
 }
 
+.sf-inline-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sf-inline-setting .sf-label {
+  margin-bottom: 0;
+}
+
 /* --- Radio group --- */
 
 .sf-radio-group {

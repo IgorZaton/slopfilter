@@ -1,7 +1,7 @@
 # SlopFilter Privacy Policy
 
 **Last updated:** June 2026  
-**Applies to:** SlopFilter and SlopFilter (Beta) browser extensions
+**Applies to:** SlopFilter browser extension
 
 ## Summary
 
@@ -41,4 +41,4 @@ We may update this policy for new features (e.g. additional sites). The “Last 
 
 ## Contact
 
-For beta feedback or privacy questions, open an issue in the project repository or contact the maintainer listed on the Chrome Web Store listing.
+For feedback or privacy questions, open an issue in the project repository or contact the maintainer listed on the Chrome Web Store listing.

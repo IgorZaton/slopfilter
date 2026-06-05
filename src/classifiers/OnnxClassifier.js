@@ -12,7 +12,7 @@ SlopFilter.OnnxClassifier = class OnnxClassifier extends SlopFilter.BaseClassifi
   }
 
   async classify(text) {
-    if (!text || !text.trim()) {
+    if (!SlopFilter.isClassifiableText(text)) {
       return { score: 0, isAI: false, signals: [] };
     }
 

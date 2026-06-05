@@ -11,11 +11,10 @@ if (typeof globalThis !== "undefined") globalThis.SlopFilter = SlopFilter;
 (async function initSlopFilter() {
   'use strict';
 
-  const debug = createDebugOverlay();
-  debug.set('init');
-
   const settings = new SlopFilter.Settings();
   await settings.load();
+  const debug = createDebugOverlay(settings.debug);
+  debug.set('init');
   debug.set(`loaded (enabled=${settings.enabled})`);
 
   const platform   = SlopFilter.createPlatform();
@@ -43,6 +42,7 @@ if (typeof globalThis !== "undefined") globalThis.SlopFilter = SlopFilter;
     scanInProgress = true;
 
     try {
+    debug.syncEnabled(settings.debug);
     if (!settings.enabled) {
       debug.set('disabled');
       return;
@@ -58,7 +58,7 @@ if (typeof globalThis !== "undefined") globalThis.SlopFilter = SlopFilter;
       if (platform.isProcessed(node)) continue;
 
       const text = platform.extractText(node);
-      if (!text) {
+      if (!text || !SlopFilter.isClassifiableText(text)) {
         platform.markProcessed(node, 0);
         continue;
       }
@@ -148,6 +148,7 @@ if (typeof globalThis !== "undefined") globalThis.SlopFilter = SlopFilter;
   });
 
   function fullRescan() {
+    debug.syncEnabled(settings.debug);
     renderer.clearAll();
     platform.clearAllMarks();
     stats = { scanned: 0, flagged: 0 };
@@ -161,7 +162,7 @@ if (typeof globalThis !== "undefined") globalThis.SlopFilter = SlopFilter;
 
   // Also listen for storage changes from other contexts (popup, background)
   chrome.storage.onChanged.addListener((changes) => {
-    const relevant = ['enabled', 'mode', 'sensitivity'];
+    const relevant = ['enabled', 'mode', 'sensitivity', 'debug'];
     const needsReload = relevant.some(k => k in changes);
     if (needsReload) {
       settings.load().then(() => fullRescan());
@@ -174,45 +175,77 @@ if (typeof globalThis !== "undefined") globalThis.SlopFilter = SlopFilter;
   }, 400);
   observer.start();
 
-  function createDebugOverlay() {
-    const el = document.createElement('div');
-    el.id = 'sf-debug';
-    el.style.cssText = [
-      'position:fixed',
-      'right:12px',
-      'bottom:12px',
-      'z-index:2147483647',
-      'background:#111',
-      'color:#0f0',
-      'font:12px/1.3 monospace',
-      'padding:6px 8px',
-      'border:1px solid #2d2',
-      'border-radius:6px',
-      'opacity:0.9',
-    ].join(';');
-    document.documentElement.appendChild(el);
+  function createDebugOverlay(initiallyEnabled) {
+    let enabled = !!initiallyEnabled;
+    let el = enabled ? ensureOverlayElement() : null;
+
+    function ensureOverlayElement() {
+      if (el?.isConnected) return el;
+      const node = document.createElement('div');
+      node.id = 'sf-debug';
+      node.style.cssText = [
+        'position:fixed',
+        'right:12px',
+        'bottom:12px',
+        'z-index:2147483647',
+        'background:#111',
+        'color:#0f0',
+        'font:12px/1.3 monospace',
+        'padding:6px 8px',
+        'border:1px solid #2d2',
+        'border-radius:6px',
+        'opacity:0.9',
+      ].join(';');
+      document.documentElement.appendChild(node);
+      return node;
+    }
+
+    function removeOverlayElement() {
+      if (el?.isConnected) el.remove();
+      el = null;
+    }
+
     return {
+      syncEnabled(nextEnabled) {
+        enabled = !!nextEnabled;
+        if (enabled) {
+          el = ensureOverlayElement();
+          return;
+        }
+        removeOverlayElement();
+      },
       set(text) {
+        if (!enabled) return;
+        el = ensureOverlayElement();
         el.textContent = `SlopFilter ${text}`;
       },
     };
   }
 })().catch((err) => {
-  const el = document.createElement('div');
-  el.id = 'sf-debug-error';
-  el.style.cssText = [
-    'position:fixed',
-    'right:12px',
-    'bottom:12px',
-    'z-index:2147483647',
-    'background:#300',
-    'color:#f88',
-    'font:12px/1.3 monospace',
-    'padding:6px 8px',
-    'border:1px solid #f66',
-    'border-radius:6px',
-    'max-width:50vw',
-  ].join(';');
-  el.textContent = `SlopFilter error: ${err && err.message ? err.message : String(err)}`;
-  document.documentElement.appendChild(el);
+  const text = `SlopFilter error: ${err && err.message ? err.message : String(err)}`;
+  try {
+    chrome.storage.sync.get({ debug: false }, (items) => {
+      if (!items?.debug) return;
+      const el = document.createElement('div');
+      el.id = 'sf-debug-error';
+      el.style.cssText = [
+        'position:fixed',
+        'right:12px',
+        'bottom:12px',
+        'z-index:2147483647',
+        'background:#300',
+        'color:#f88',
+        'font:12px/1.3 monospace',
+        'padding:6px 8px',
+        'border:1px solid #f66',
+        'border-radius:6px',
+        'max-width:50vw',
+      ].join(';');
+      el.textContent = text;
+      document.documentElement.appendChild(el);
+    });
+  } catch {
+    // Suppress fallback UI noise when debug mode is disabled.
+  }
+  console.error(text);
 });

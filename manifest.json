@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SlopFilter",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "The ad blocker for AI-generated content. Detects and dims AI slop so you can read what humans actually wrote.",
   "icons": {
     "16": "icons/icon-16.png",
@@ -9,15 +9,7 @@
     "128": "icons/icon-128.png"
   },
   "permissions": ["storage", "tabs", "activeTab", "offscreen"],
-  "host_permissions": [
-    "*://reddit.com/*",
-    "*://*.reddit.com/*",
-    "*://linkedin.com/*",
-    "*://*.linkedin.com/*",
-    "https://huggingface.co/*",
-    "https://*.huggingface.co/*",
-    "https://cdn.jsdelivr.net/*"
-  ],
+  "host_permissions": ["<all_urls>"],
   "action": {
     "default_popup": "popup/popup.html",
     "default_title": "SlopFilter",
@@ -38,7 +30,26 @@
         "*://reddit.com/*",
         "*://*.reddit.com/*",
         "*://linkedin.com/*",
-        "*://*.linkedin.com/*"
+        "*://*.linkedin.com/*",
+        "*://x.com/*",
+        "*://*.x.com/*",
+        "*://twitter.com/*",
+        "*://*.twitter.com/*",
+        "*://facebook.com/*",
+        "*://*.facebook.com/*",
+        "*://instagram.com/*",
+        "*://*.instagram.com/*",
+        "*://youtube.com/*",
+        "*://*.youtube.com/*",
+        "*://news.ycombinator.com/*",
+        "*://stackoverflow.com/*",
+        "*://*.stackoverflow.com/*",
+        "*://stackexchange.com/*",
+        "*://*.stackexchange.com/*",
+        "*://medium.com/*",
+        "*://*.medium.com/*",
+        "*://substack.com/*",
+        "*://*.substack.com/*"
       ],
       "js": [
         "src/data/patterns.js",
@@ -49,6 +60,7 @@
         "src/platforms/BasePlatform.js",
         "src/platforms/RedditPlatform.js",
         "src/platforms/LinkedInPlatform.js",
+        "src/platforms/GenericPlatform.js",
         "src/platforms/createPlatform.js",
         "src/renderers/ContentRenderer.js",
         "src/observers/DOMObserver.js",

@@ -1,7 +1,7 @@
 (async function initPopup() {
   'use strict';
 
-  const DEFAULTS = { enabled: true, mode: 'dim', sensitivity: 'medium' };
+  const DEFAULTS = { enabled: true, mode: 'dim', sensitivity: 'medium', debug: false };
 
   const SENSITIVITY_THRESHOLDS = {
     high:   { badgeMin: 50, dimMin: 86 },
@@ -12,6 +12,7 @@
   // --- DOM refs ---
   const popup       = document.querySelector('.sf-popup');
   const enabledEl   = document.getElementById('sf-enabled');
+  const debugEl     = document.getElementById('sf-debug');
   const scannedEl   = document.getElementById('sf-scanned');
   const flaggedEl   = document.getElementById('sf-flagged');
   const sensitivityHintEl = document.getElementById('sf-sensitivity-hint');
@@ -20,6 +21,7 @@
   const settings = await storageSyncGet(DEFAULTS);
 
   enabledEl.checked = settings.enabled;
+  debugEl.checked = !!settings.debug;
   setRadio('sensitivity', settings.sensitivity);
   updateSensitivityHint(settings.sensitivity);
   setRadio('mode', settings.mode);
@@ -45,6 +47,10 @@
 
   document.querySelectorAll('input[name="mode"]').forEach(radio => {
     radio.addEventListener('change', () => save({ mode: radio.value }));
+  });
+
+  debugEl.addEventListener('change', () => {
+    save({ debug: debugEl.checked });
   });
 
   // Live stats updates from content scripts

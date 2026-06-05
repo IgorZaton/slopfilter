@@ -22,7 +22,7 @@ const svg = `
     </linearGradient>
   </defs>
   <rect width="100%" height="100%" fill="url(#bg)"/>
-  <text x="80" y="120" fill="#ffffff" font-family="system-ui,sans-serif" font-size="56" font-weight="700">SlopFilter (Beta)</text>
+  <text x="80" y="120" fill="#ffffff" font-family="system-ui,sans-serif" font-size="56" font-weight="700">SlopFilter</text>
   <text x="80" y="180" fill="#a0a0b8" font-family="system-ui,sans-serif" font-size="28">The ad blocker for AI-generated content</text>
   <rect x="80" y="240" width="520" height="420" rx="16" fill="#0f0f1a" stroke="#333" stroke-width="2"/>
   <text x="110" y="300" fill="#4ade80" font-family="system-ui,sans-serif" font-size="22" font-weight="600">● Enabled</text>

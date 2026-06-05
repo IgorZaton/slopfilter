@@ -11,8 +11,6 @@ if (typeof globalThis !== "undefined") globalThis.SlopFilter = SlopFilter;
 SlopFilter.LinkedInPlatform = class LinkedInPlatform
   extends SlopFilter.BasePlatform {
 
-  static MIN_TEXT_LEN = 15;
-
   static SELECTORS = Object.freeze({
     sduiTextBox: [
       '[data-testid="expandable-text-box"]',
@@ -103,7 +101,7 @@ SlopFilter.LinkedInPlatform = class LinkedInPlatform
       if (this._shouldExclude(resolved)) return;
 
       const text = this.extractText(resolved);
-      if (text.length < LinkedInPlatform.MIN_TEXT_LEN) return;
+      if (!SlopFilter.isClassifiableText(text)) return;
 
       seen.add(resolved);
       nodes.push(resolved);

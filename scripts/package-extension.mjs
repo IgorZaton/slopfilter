@@ -2,7 +2,7 @@
  * Builds a Chrome Web Store upload ZIP from built extension artifacts.
  *
  * Usage:
- *   node scripts/package-extension.mjs [--channel=beta|release]
+ *   node scripts/package-extension.mjs
  *
  * Output:
  *   dist/slopfilter-<version>/          (staging folder)
@@ -23,12 +23,6 @@ import path from 'node:path';
 const projectRoot = process.cwd();
 const distRoot = path.join(projectRoot, 'dist');
 
-const channel = parseChannel(process.argv.slice(2));
-const overridesPath =
-  channel === 'beta'
-    ? path.join(projectRoot, 'store', 'beta.overrides.json')
-    : null;
-
 /** Paths copied into the package (glob * = all files in directory). */
 const PACKAGE_PATHS = [
   'manifest.json',
@@ -39,11 +33,14 @@ const PACKAGE_PATHS = [
   'icons',
   'vendor',
   { from: 'offscreen/offscreen.html', to: 'offscreen/offscreen.html' },
-  { from: 'offscreen/offscreen.bundle.js', to: 'offscreen/offscreen.bundle.js' },
+  { from: 'offscreen/offscreen.boot.js', to: 'offscreen/offscreen.boot.js' },
 ];
 
 const REQUIRED_ARTIFACTS = [
-  'offscreen/offscreen.bundle.js',
+  'offscreen/offscreen.boot.js',
+  'vendor/transformers/transformers.min.js',
+  'vendor/transformers/ort-wasm-simd-threaded.jsep.wasm',
+  'vendor/transformers/ort.bundle.min.mjs',
   'vendor/transformers',
   'icons/icon-16.png',
   'icons/icon-48.png',
@@ -51,7 +48,9 @@ const REQUIRED_ARTIFACTS = [
 ];
 
 await assertArtifacts();
-const manifest = await loadManifestForChannel();
+const manifest = JSON.parse(
+  await readFile(path.join(projectRoot, 'manifest.json'), 'utf8')
+);
 const version = manifest.version;
 const slug = `slopfilter-${version}`;
 const stageDir = path.join(distRoot, slug);
@@ -65,21 +64,9 @@ await stagePackage(stageDir, manifest);
 await writeZip(stageDir, zipPath);
 
 const sizeMb = ((await readFile(zipPath)).length / (1024 * 1024)).toFixed(2);
-console.log(`\nChannel: ${channel}`);
-console.log(`Staged:  ${path.relative(projectRoot, stageDir)}/`);
+console.log(`\nStaged:  ${path.relative(projectRoot, stageDir)}/`);
 console.log(`Upload:  ${path.relative(projectRoot, zipPath)} (${sizeMb} MB)`);
-console.log('\nNext: see docs/CHROME_WEB_STORE_BETA.md');
-
-function parseChannel(argv) {
-  for (const arg of argv) {
-    if (arg.startsWith('--channel=')) {
-      const value = arg.slice('--channel='.length);
-      if (value === 'beta' || value === 'release') return value;
-      throw new Error(`Invalid channel "${value}". Use beta or release.`);
-    }
-  }
-  return 'beta';
-}
+console.log('\nNext: see docs/CHROME_WEB_STORE.md');
 
 async function assertArtifacts() {
   const missing = [];
@@ -96,24 +83,6 @@ async function assertArtifacts() {
   console.error('Missing build artifacts:\n  ' + missing.join('\n  '));
   console.error('\nRun: npm run build');
   process.exit(1);
-}
-
-async function loadManifestForChannel() {
-  const manifestPath = path.join(projectRoot, 'manifest.json');
-  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
-
-  if (!overridesPath) return manifest;
-
-  const overrides = JSON.parse(await readFile(overridesPath, 'utf8'));
-  return mergeManifest(manifest, overrides);
-}
-
-function mergeManifest(base, overrides) {
-  const merged = { ...base, ...overrides };
-  if (overrides.action) {
-    merged.action = { ...base.action, ...overrides.action };
-  }
-  return merged;
 }
 
 async function stagePackage(stageDir, manifest) {

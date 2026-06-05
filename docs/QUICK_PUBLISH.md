@@ -1,6 +1,6 @@
 # Publish today — fastest path
 
-Target: **unlisted beta** live in the Chrome Web Store (review usually **1–3 business days**, sometimes faster).
+Target: **Chrome Web Store** listing live (review usually **1–3 business days**, sometimes faster).
 
 ## Before you start (~15 min)
 
@@ -14,7 +14,7 @@ Target: **unlisted beta** live in the Chrome Web Store (review usually **1–3 b
 https://igorzaton.github.io/slopfilter/privacy-policy.html
 ```
 
-If the root URL is 404, enable Pages: [Settings → Pages → GitHub Actions](https://github.com/IgorZaton/slopfilter/settings/pages), then run the **Deploy privacy policy to Pages** workflow manually. See [CHROME_WEB_STORE_BETA.md](./CHROME_WEB_STORE_BETA.md#github-pages-setup).
+If the root URL is 404, enable Pages: [Settings → Pages → GitHub Actions](https://github.com/IgorZaton/slopfilter/settings/pages), then run the **Deploy privacy policy to Pages** workflow manually. See [CHROME_WEB_STORE.md](./CHROME_WEB_STORE.md#github-pages-setup).
 
 ## Build upload assets (~2 min)
 
@@ -27,19 +27,19 @@ You get:
 
 | File | Use |
 |------|-----|
-| `dist/slopfilter-0.1.0.zip` | Upload in dashboard |
+| `dist/slopfilter-<version>.zip` | Upload in dashboard |
 | `icons/icon-128.png` | Store icon |
 | `store/screenshots/promo-1280x800.png` | Screenshot (swap for real UI later) |
 
-**Smoke test:** `chrome://extensions` → Load unpacked → `dist/slopfilter-0.1.0/` → open Reddit or LinkedIn.
+**Smoke test:** `chrome://extensions` → Load unpacked → `dist/slopfilter-<version>/` → open a supported social site.
 
 ## Dashboard — new item (~20 min)
 
-1. [Developer Dashboard](https://chrome.google.com/webstore/devconsole) → **New item** → upload `dist/slopfilter-0.1.0.zip`.
+1. [Developer Dashboard](https://chrome.google.com/webstore/devconsole) → **New item** → upload `dist/slopfilter-<version>.zip`.
 2. **Store listing**
-   - **Name:** SlopFilter (Beta) *(already in the ZIP manifest)*
-   - **Summary:** `Beta: Spot likely AI posts on Reddit & LinkedIn. Dim, hide, or badge slop — on-device ML, no cloud API.`
-   - **Description:** copy from [`store/listing-beta.md`](../store/listing-beta.md)
+   - **Name:** SlopFilter
+   - **Summary:** `Spot likely AI posts on social feeds. Dim, hide, or badge slop — on-device ML, no cloud API.`
+   - **Description:** copy from [`store/listing.md`](../store/listing.md)
    - **Category:** Productivity
    - **Language:** English
    - **Icon:** `icons/icon-128.png`
@@ -47,9 +47,9 @@ You get:
    - **Privacy policy:** `https://igorzaton.github.io/slopfilter/privacy-policy.html`
 3. **Privacy**
    - No user data sold
-   - Single purpose: *Help users identify and visually de-emphasize likely AI-generated social posts on Reddit and LinkedIn using on-device classification.*
+   - Single purpose: *Help users identify and visually de-emphasize likely AI-generated social posts using on-device classification.*
 4. **Distribution**
-   - **Visibility:** Unlisted (beta testers only via link)
+   - **Visibility:** Unlisted or Public
    - **Regions:** all / as you prefer
 5. **Submit for review**
 
@@ -60,25 +60,17 @@ You get:
 | `storage` | Save user settings and local scan statistics. |
 | `tabs` / `activeTab` | Show per-site stats in the popup for the active tab. |
 | `offscreen` | Run local ONNX ML in a persistent offscreen document (MV3 service workers cannot host WASM inference). |
-| Reddit / LinkedIn | Read post text from the page and apply dim/hide/badge treatments. |
+| Social / forum hosts | Read post text from the page and apply dim/hide/badge treatments. |
 | Hugging Face / jsDelivr | Download open-source ONNX model weights once; cached locally. No user content sent. |
 
 ## After submit
 
 - Check dashboard email for review questions (common for ML + broad host permissions).
-- When **Published**, copy the **unlisted install link** and share with testers.
-- Review can reject for screenshot quality — replace promo PNG with a real capture from Reddit/LinkedIn if needed.
+- When **Published**, copy the install link and share it.
+- Review can reject for screenshot quality — replace promo PNG with a real capture from a supported site if needed.
 
 ## If review is slow
 
 - Ensure privacy policy URL loads in an incognito window.
 - Confirm the ZIP loads unpacked without errors.
 - Reply promptly to any “remote code” / Hugging Face questions: *only model weights are downloaded; executable code is bundled in the extension.*
-
-## Public release later
-
-```bash
-npm run package:release
-```
-
-Update listing (drop “Beta”), set visibility to **Public**, new screenshots, submit update.

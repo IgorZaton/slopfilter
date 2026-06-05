@@ -11,6 +11,7 @@ SlopFilter.Settings = class Settings {
     enabled: true,
     mode: 'dim',
     sensitivity: 'medium',
+    debug: false,
   });
 
   /** Badge and dim/hide cutoffs per sensitivity (higher sensitivity = lower thresholds). */
@@ -48,6 +49,7 @@ SlopFilter.Settings = class Settings {
   get enabled()     { return this._cache.enabled; }
   get mode()        { return this._cache.mode; }
   get sensitivity() { return this._cache.sensitivity; }
+  get debug()       { return this._cache.debug; }
 
   get displayThresholds() {
     return Settings.SENSITIVITY_THRESHOLDS[this._cache.sensitivity]

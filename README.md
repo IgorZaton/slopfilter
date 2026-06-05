@@ -6,7 +6,7 @@ The ad blocker for AI-generated content. Detects and dims AI slop so you can rea
 
 SlopFilter is a browser extension that detects likely AI-generated text on social platforms using a **local TMR ONNX classifier** — no cloud APIs, no data leaves your browser.
 
-**Supported platforms:** Reddit, LinkedIn
+**Supported platforms:** Reddit, LinkedIn, X/Twitter, Facebook, Instagram, YouTube, Hacker News, Stack Overflow/StackExchange, Medium, Substack (via generic fallback where no dedicated adapter exists)
 
 **Display modes:**
 - **Dim** — reduces flagged content to 25% opacity; hover to read
@@ -35,19 +35,24 @@ Posts between the badge and dim thresholds get a badge only. In **badge** displa
 4. Open `chrome://extensions` in Chrome
 5. Enable **Developer mode** (top right)
 6. Click **Load unpacked** and select this project folder
-7. Navigate to Reddit or LinkedIn — the extension is active
+7. Navigate to a supported social/forum site — the extension is active
 
 The ONNX model is downloaded on first classification and then cached by the browser.
 
-## Chrome Web Store (beta)
+## Run smoke tests
 
-**Publish ASAP:** [docs/QUICK_PUBLISH.md](docs/QUICK_PUBLISH.md)
+- `node test/classifier.test.js`
+- `node test/settings.test.js`
+
+## Chrome Web Store
+
+**Publish:** [docs/QUICK_PUBLISH.md](docs/QUICK_PUBLISH.md)
 
 ```bash
 npm run store:assets   # ZIP + screenshot + icons
 ```
 
-Upload `dist/slopfilter-<version>.zip`. More detail: [docs/CHROME_WEB_STORE_BETA.md](docs/CHROME_WEB_STORE_BETA.md).
+Upload `dist/slopfilter-<version>.zip`. More detail: [docs/CHROME_WEB_STORE.md](docs/CHROME_WEB_STORE.md).
 
 ## Architecture
 
@@ -59,12 +64,13 @@ src/
 │   └── createClassifier.js    ← Classifier factory
 ├── offscreen/
 │   ├── offscreen.html         ← Persistent MV3 offscreen document
-│   ├── offscreen.runtime.js   ← ONNX model runtime source
-│   └── offscreen.bundle.js    ← Built runtime (from npm run build:ml)
+│   ├── offscreen.boot.js      ← ONNX model runtime (loads vendor/transformers)
+│   └── offscreen.html         ← Offscreen document entry
 ├── platforms/
 │   ├── BasePlatform.js        ← Abstract base (extend for new sites)
 │   ├── RedditPlatform.js      ← Reddit DOM adapter
 │   ├── LinkedInPlatform.js    ← LinkedIn DOM adapter
+│   ├── GenericPlatform.js     ← Generic social/forum fallback adapter
 │   └── createPlatform.js      ← Hostname → platform factory
 ├── renderers/
 │   └── ContentRenderer.js     ← Visual treatment (dim/hide/badge)
@@ -104,5 +110,7 @@ class LinkedInPlatform extends SlopFilter.BasePlatform {
 
 - Reload the extension after `npm run build:ml`.
 - First classification can take longer while the model downloads (~100 MB).
-- Check the green debug overlay (bottom-right): `onnx error: ...` means runtime/model failed.
+- Enable **Debug Overlay** in the popup to show diagnostic text in the bottom-right corner.
+- If debug overlay is enabled and you see `onnx error: ...` or `no available backend found`, run `npm run build`, reload the extension, and wait for the first model download to finish.
+- ONNX runtime files must exist under `vendor/transformers/` (`transformers.min.js`, `ort.bundle.min.mjs`, `ort-wasm-simd-threaded.jsep.*`). Do not use CDN script loading.
 - If `LinkedIn nodes=0`, DOM selectors may need updating for your feed layout.

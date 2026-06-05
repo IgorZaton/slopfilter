@@ -88,7 +88,7 @@ SlopFilter.RedditPlatform = class RedditPlatform
     }
 
     // Keep only nodes with some readable text to avoid noisy wrappers.
-    return nodes.filter((node) => this.extractText(node).length >= 20);
+    return nodes.filter((node) => SlopFilter.isClassifiableText(this.extractText(node)));
   }
 
   extractText(node) {

@@ -9,6 +9,12 @@ if (typeof globalThis !== "undefined") globalThis.SlopFilter = SlopFilter;
 SlopFilter.Patterns = Object.freeze({
 
   MIN_TEXT_LENGTH: 100,
+  /** Minimum words before a block is worth classifying. */
+  MIN_WORD_COUNT: 20,
+  /** Multi-sentence blocks need at least this many sentences. */
+  MIN_SENTENCE_COUNT: 2,
+  /** Single long blocks without punctuation still qualify at this word count. */
+  LONG_BLOCK_WORD_COUNT: 50,
 
   FILLER_PHRASES: [
     { pattern: /\bit(?:'|'|`)?s\s+(?:important|worth|crucial)\s+(?:to\s+note|noting|mentioning|highlighting)/i, weight: 3 },
@@ -63,3 +69,25 @@ SlopFilter.Patterns = Object.freeze({
 
   NUMBERED_LIST_REGEX: /^[\s]*\d+[\.\)]\s+/gm,
 });
+
+/**
+ * Whether extracted text is long enough to run through the classifier.
+ * Skips short snippets and single-sentence blurbs.
+ * @param {string} text
+ * @returns {boolean}
+ */
+SlopFilter.isClassifiableText = function isClassifiableText(text) {
+  const trimmed = (text || '').trim();
+  if (!trimmed) return false;
+
+  const words = trimmed.split(/\s+/).filter(Boolean);
+  if (words.length < SlopFilter.Patterns.MIN_WORD_COUNT) return false;
+  if (words.length >= SlopFilter.Patterns.LONG_BLOCK_WORD_COUNT) return true;
+
+  const sentences = trimmed
+    .split(/[.!?]+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+
+  return sentences.length >= SlopFilter.Patterns.MIN_SENTENCE_COUNT;
+};
