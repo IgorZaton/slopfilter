@@ -57,15 +57,14 @@ You get:
 
 | Permission | Text |
 |------------|------|
-| `storage` | Save user settings and local scan statistics. |
 | `storage` | Save user settings and scan statistics shown in the popup. |
 | `offscreen` | Run local ONNX ML in a persistent offscreen document (MV3 service workers cannot host WASM inference). |
-| Social / forum hosts | Read post text from the page and apply dim/hide/badge treatments. |
-| Hugging Face / jsDelivr | Download open-source ONNX model weights once; cached locally. No user content sent. |
+| Social / forum hosts (listed in manifest) | Read post text from supported pages and apply dim/hide/badge treatments. |
+| `huggingface.co` | Download open-source ONNX model weights once; cached locally. No user content sent. |
 
 ## After submit
 
-- Check dashboard email for review questions (common for ML + broad host permissions).
+- Check dashboard email for review questions (common for ML + host permissions).
 - When **Published**, copy the install link and share it.
 - Review can reject for screenshot quality — replace promo PNG with a real capture from a supported site if needed.
 
