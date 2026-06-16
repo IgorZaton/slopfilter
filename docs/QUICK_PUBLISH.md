@@ -58,7 +58,7 @@ You get:
 | Permission | Text |
 |------------|------|
 | `storage` | Save user settings and local scan statistics. |
-| `tabs` / `activeTab` | Show per-site stats in the popup for the active tab. |
+| `storage` | Save user settings and scan statistics shown in the popup. |
 | `offscreen` | Run local ONNX ML in a persistent offscreen document (MV3 service workers cannot host WASM inference). |
 | Social / forum hosts | Read post text from the page and apply dim/hide/badge treatments. |
 | Hugging Face / jsDelivr | Download open-source ONNX model weights once; cached locally. No user content sent. |

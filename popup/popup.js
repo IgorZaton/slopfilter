@@ -76,38 +76,17 @@
   }
 
   async function loadStats() {
-    // First, read latest tab-independent stats snapshot.
     try {
       const local = await storageLocalGet(['sfStats']);
       if (local?.sfStats) {
         scannedEl.textContent = local.sfStats.scanned || 0;
         flaggedEl.textContent = local.sfStats.flagged || 0;
+        return;
       }
     } catch {
       // Ignore and continue.
     }
 
-    // Prefer direct tab stats; this avoids background-context compatibility issues.
-    try {
-      let activeTabs = await tabsQuery({ active: true, lastFocusedWindow: true });
-      let activeTab = activeTabs[0];
-      if (!activeTab) {
-        activeTabs = await tabsQuery({ active: true, currentWindow: true });
-        activeTab = activeTabs[0];
-      }
-      if (activeTab?.id != null) {
-        const tabStats = await tabsSendMessage(activeTab.id, { type: 'stats:get-tab' });
-        if (tabStats) {
-          scannedEl.textContent = tabStats.scanned || 0;
-          flaggedEl.textContent = tabStats.flagged || 0;
-          return;
-        }
-      }
-    } catch {
-      // Not on a supported page, or content script unavailable.
-    }
-
-    // Fallback to background stats.
     try {
       const response = await runtimeSendMessage({ type: 'stats:get' });
       if (response) {
@@ -166,32 +145,6 @@
         chrome.storage.sync.set(values, () => {
           if (chrome.runtime?.lastError) return reject(new Error(chrome.runtime.lastError.message));
           resolve();
-        });
-      } catch (err) {
-        reject(err);
-      }
-    });
-  }
-
-  function tabsQuery(queryInfo) {
-    return new Promise((resolve, reject) => {
-      try {
-        chrome.tabs.query(queryInfo, (tabs) => {
-          if (chrome.runtime?.lastError) return reject(new Error(chrome.runtime.lastError.message));
-          resolve(tabs || []);
-        });
-      } catch (err) {
-        reject(err);
-      }
-    });
-  }
-
-  function tabsSendMessage(tabId, message) {
-    return new Promise((resolve, reject) => {
-      try {
-        chrome.tabs.sendMessage(tabId, message, (response) => {
-          if (chrome.runtime?.lastError) return reject(new Error(chrome.runtime.lastError.message));
-          resolve(response);
         });
       } catch (err) {
         reject(err);

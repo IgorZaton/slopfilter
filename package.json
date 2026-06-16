@@ -1,7 +1,7 @@
 {
   "name": "slopfilter",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "SlopFilter extension ML runtime build tooling",
   "scripts": {
     "build:ml": "node scripts/build-ml.mjs",

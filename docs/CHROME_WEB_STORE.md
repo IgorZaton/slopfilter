@@ -50,8 +50,7 @@ Verify locally before uploading:
 
 | Permission | Justification |
 |------------|----------------|
-| `storage` | Save user settings and local scan stats. |
-| `tabs` / `activeTab` | Read tab URL to show per-site stats in the popup. |
+| `storage` | Save user settings and scan statistics shown in the popup. |
 | `offscreen` | Run ONNX inference in a persistent document (MV3 service workers cannot host WASM ML). |
 | Social / forum hosts | Inject content script to read posts and apply dim/hide/badge. |
 | Hugging Face / jsDelivr | One-time download of open-source ONNX model weights and tokenizer config; cached locally. |
