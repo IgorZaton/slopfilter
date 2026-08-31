@@ -130,8 +130,14 @@ def setup_compositor(out_dir: Path) -> None:
     file_out.file_slots.new("depth_")
     file_out.file_slots.new("mask_")
 
-    normalize = tree.nodes.new("CompositorNodeNormalize")
-    normalize.location = (360, -40)
+    # Camera is ~7.3 units from origin; clamp Z so background does not explode the range.
+    depth_range = tree.nodes.new("CompositorNodeMapRange")
+    depth_range.location = (360, -40)
+    depth_range.use_clamp = True
+    depth_range.inputs[1].default_value = 3.0
+    depth_range.inputs[2].default_value = 12.0
+    depth_range.inputs[3].default_value = 0.0
+    depth_range.inputs[4].default_value = 1.0
 
     mask_gt = tree.nodes.new("CompositorNodeMath")
     mask_gt.location = (360, -220)
@@ -141,8 +147,8 @@ def setup_compositor(out_dir: Path) -> None:
     links = tree.links
     links.new(rl.outputs["Image"], composite.inputs["Image"])
     links.new(rl.outputs["Image"], file_out.inputs[0])
-    links.new(rl.outputs["Depth"], normalize.inputs[0])
-    links.new(normalize.outputs[0], file_out.inputs[1])
+    links.new(rl.outputs["Depth"], depth_range.inputs[0])
+    links.new(depth_range.outputs[0], file_out.inputs[1])
     links.new(rl.outputs["IndexOB"], mask_gt.inputs[0])
     links.new(mask_gt.outputs[0], file_out.inputs[2])
 
@@ -209,6 +215,8 @@ def main() -> None:
     rgb = flatten_named(out_dir, "rgb_", "rgb.png")
     depth = flatten_named(out_dir, "depth_", "depth.png")
     mask = flatten_named(out_dir, "mask_", "mask.png")
+    for leftover in out_dir.glob("*_0001.png"):
+        leftover.unlink()
     manifest = write_manifest(out_dir, args, cube, cam)
 
     print(f"wrote {rgb}")
