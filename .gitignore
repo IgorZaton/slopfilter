@@ -30,6 +30,9 @@ store/screenshots/
 .DS_Store
 Thumbs.db
 
+# Local Blender pipeline renders (run: python3 sim/run_pipeline.py)
+sim/output/
+
 # Editor / tooling
 *.log
 npm-debug.log*
