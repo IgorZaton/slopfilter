@@ -1,0 +1,12 @@
+---
+description: Limit edits to request-scoped, surgical changes only
+alwaysApply: true
+---
+
+# Surgical Changes
+
+- Touch only files and lines required for the request.
+- Do not refactor unrelated code, comments, formatting, or naming.
+- Match existing local style and patterns.
+- If unrelated dead code is noticed, mention it; do not remove unless asked.
+- Remove only unused code/imports introduced by your own change.

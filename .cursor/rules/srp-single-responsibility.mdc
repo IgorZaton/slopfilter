@@ -1,0 +1,17 @@
+---
+description: Enforce Single Responsibility Principle (SRP)
+alwaysApply: true
+---
+
+# Single Responsibility Principle (SRP)
+
+- Keep each module/class/function focused on one reason to change.
+- If a component handles unrelated concerns (e.g., IO + business rules + formatting), split responsibilities.
+- Prefer composition of small units over one large coordinator with mixed duties.
+- Keep public APIs scoped to one purpose.
+
+## Review checklist
+
+- Can this change be described as one responsibility?
+- Would unrelated requirement changes force edits in this same unit?
+- Can a helper be extracted without changing behavior?

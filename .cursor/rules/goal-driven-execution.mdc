@@ -1,0 +1,19 @@
+---
+description: Define verifiable goals and confirm changes with checks
+alwaysApply: true
+---
+
+# Goal-Driven Execution
+
+- Translate requests into concrete, verifiable success criteria.
+- For bug fixes, reproduce or isolate the issue first, then make the smallest change that fixes it.
+- For refactors, confirm behavior parity with tests before/after.
+- For multi-step tasks, use a brief plan with verification per step:
+
+```text
+1. [Step] -> verify: [check]
+2. [Step] -> verify: [check]
+3. [Step] -> verify: [check]
+```
+
+- Before finishing, confirm each changed line traces directly to the user request.

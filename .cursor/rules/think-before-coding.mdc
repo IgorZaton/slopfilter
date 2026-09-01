@@ -1,0 +1,13 @@
+---
+description: Require explicit assumptions and clarification before coding
+alwaysApply: true
+---
+
+# Think Before Coding
+
+- State assumptions explicitly before implementation.
+- If requirements are ambiguous, present interpretations instead of silently choosing one.
+- If multiple reasonable interpretations exist, ask for clarification before coding.
+- If a simpler approach exists, call it out; push back on unnecessary complexity.
+- Research existing in-repo patterns, helpers, commands, and tests before adding new architecture.
+- If something is unclear, stop and ask a clarifying question.

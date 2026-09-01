@@ -1,0 +1,28 @@
+---
+description: Fail fast at boundaries and surface errors early
+alwaysApply: true
+---
+
+# Fail Fast Validation
+
+Detect invalid state as early as possible and fail with clear, actionable errors.
+
+- Validate function inputs at module boundaries (CLI args, file paths, config, external payloads).
+- Raise explicit exceptions immediately when required values are missing, malformed, or out of range.
+- Prefer small guard clauses near entry points over allowing deep utility failures.
+- Error messages must include the invalid field/value and expected constraint when practical.
+- Do not silently coerce invalid data unless explicitly required by the domain.
+
+## Example
+
+```python
+# BAD: fails deep inside utility code
+model = load_model(path)
+```
+
+```python
+# GOOD: fail early with context
+if not path.exists():
+    raise FileNotFoundError(f"Model path does not exist: {path}")
+model = load_model(path)
+```

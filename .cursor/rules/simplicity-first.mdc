@@ -1,0 +1,12 @@
+---
+description: Keep implementations minimal and avoid speculative complexity
+alwaysApply: true
+---
+
+# Simplicity First
+
+- Implement only what was requested; avoid speculative features.
+- Avoid single-use abstractions and unrequested configurability.
+- Do not add error handling for impossible scenarios.
+- Prefer the minimum code that solves the task.
+- If the solution feels overengineered, simplify before finalizing.

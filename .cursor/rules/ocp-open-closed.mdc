@@ -1,0 +1,17 @@
+---
+description: Enforce Open/Closed Principle (OCP)
+alwaysApply: true
+---
+
+# Open/Closed Principle (OCP)
+
+- Prefer extension points over modifying stable core logic.
+- Add new behavior via new strategy/handler/adapter implementations when practical.
+- Avoid brittle branching growth in central flows (`if/elif` chains by type/mode).
+- Keep interfaces stable and extend around them.
+
+## Review checklist
+
+- Does this change require editing many existing branches?
+- Could a pluggable abstraction avoid touching stable code?
+- Is new behavior additive rather than invasive?

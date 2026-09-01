@@ -1,0 +1,54 @@
+---
+description: Require research-driven option scoring and context-aware reuse analysis in Plan mode
+alwaysApply: true
+---
+
+# Research-Driven Planning (Plan Mode)
+
+Apply this rule when working in Plan mode.
+
+## 1) Research Before Proposing
+
+- Identify current in-repo solutions first (existing flows, helpers, patterns, endpoints, scripts).
+- For each candidate approach, evaluate:
+  - fit to current request,
+  - implementation cost,
+  - risk/regression surface,
+  - security/vulnerability exposure,
+  - maintenance complexity.
+- Do not propose a new architecture before checking whether an existing one can be extended safely.
+
+## 2) Score Options Explicitly
+
+For meaningful decisions, present at least 2 viable options and score them briefly (e.g., 1-5) on:
+- correctness/fit,
+- simplicity,
+- risk/security,
+- reuse potential,
+- delivery speed.
+
+State why the selected option wins in this context.
+
+## 3) Reuse Analysis: True vs Fake Duplication
+
+- **True duplication**: same behavior, same invariants, same lifecycle, same ownership, same failure model.
+- **Fake duplication**: similar shape/name but different constraints, side effects, performance profile, or domain meaning.
+- Reuse only when constraints match; otherwise isolate with a new path and explain why.
+- Avoid "forced reuse" that increases coupling or hides domain differences.
+
+## 4) Simpler Path Check
+
+Before finalizing a plan, explicitly answer:
+- What is the simplest solution that satisfies the request?
+- What can be reused as-is?
+- What must be new?
+- Which vulnerabilities or failure modes remain, and how are they mitigated?
+
+## 5) Plan Output Quality Gate
+
+A complete plan should include:
+- brief option comparison with scores,
+- chosen approach and rationale,
+- reuse map (reuse/extend/new),
+- key risks and mitigations,
+- clear verification steps.

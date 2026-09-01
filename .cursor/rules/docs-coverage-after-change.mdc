@@ -1,0 +1,12 @@
+---
+description: Evaluate and update all user-facing docs after code changes
+alwaysApply: true
+---
+
+# Full Docs Coverage After Changes
+
+- For every code/content change, evaluate documentation impact before finishing.
+- Treat all Markdown docs as in-scope, including `README.md`, `docs/**/*.md`, and release notes files.
+- Keep code + docs in the same change so published docs never lag implementation.
+- If no doc edits are required, explicitly state why docs were unaffected.
+- Do not leave stale commands, outdated defaults, broken links, or mismatched terminology across code and Markdown docs.

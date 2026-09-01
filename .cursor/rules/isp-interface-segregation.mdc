@@ -1,0 +1,17 @@
+---
+description: Enforce Interface Segregation Principle (ISP)
+alwaysApply: true
+---
+
+# Interface Segregation Principle (ISP)
+
+- Keep interfaces small and role-specific.
+- Avoid forcing consumers to depend on methods they do not use.
+- Split broad contracts into focused interfaces/protocols.
+- Prefer multiple narrow abstractions over one “god interface”.
+
+## Review checklist
+
+- Does any consumer implement/receive methods it does not need?
+- Can this contract be split by usage context?
+- Are dependencies minimized per caller role?

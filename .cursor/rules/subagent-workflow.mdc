@@ -1,0 +1,83 @@
+---
+description: When to use parallel or sequential subagents vs a single agent
+alwaysApply: true
+---
+
+# Subagent Workflow
+
+Use subagents when parallelism or scoped read-only research reduces time without violating surgical, goal-driven work. Default to a single agent for small edits.
+
+## Use subagents
+
+### Pre-merge review (highest ROI)
+
+- **`pr-review` skill**: parallel lenses before commit/PR when diff is non-trivial
+  - Before PR: `all parallel` (code, tests, errors, types as applicable)
+  - After fixes: targeted sequential re-run (e.g. `tests errors`)
+- **`code-review` skill**: on substantial PRs only; skip trivial/lint-only diffs
+
+Each lens or reviewer should produce verifiable findings (file:line, severity) before merge.
+
+### Pre-implementation research
+
+When the request may touch 3+ areas or needs reuse analysis first (`research-driven-planning`):
+
+- Launch **parallel `explore` subagents** (read-only), e.g.:
+  1. Existing patterns for the feature (modules, configs, helpers)
+  2. Tests and callers of affected code
+  3. Integration points, data paths, or external contracts when relevant
+- Main agent synthesizes, picks extension points (OCP/DIP), then implements surgically
+
+### Multi-step pipeline / integration debugging
+
+When a multi-step script, CI job, or integration flow fails:
+
+| Subagent | Scope |
+|----------|--------|
+| `explore` | Config / entrypoint flow |
+| `explore` | Artifacts, outputs, or downstream consumers |
+| `shell` | Minimal repro of the failing step |
+
+Merge findings; fix with one verification step per change.
+
+### Large refactors (behavior must stay identical)
+
+- **Parallel explore** to map callers is OK
+- **Implement and verify sequentially** — do not parallelize edits or parity checks
+
+## Do not use subagents
+
+- **`learning-output-style`**: interactive pauses for user code; subagents break that flow
+- **`commit-commands`**: linear git workflow
+- **Small surgical fixes** (1–3 files): overhead exceeds value
+- **Notebook exploration**: stay in one interactive loop
+- User says **"just implement it"**
+
+## Default workflow
+
+```text
+1. Feature/bug → touches 3+ areas? → parallel explore (reuse map)
+2. Implement → single agent, surgical diff, verify per step
+3. Before commit → pr-review code errors (sequential)
+4. Before PR → pr-review all parallel (if non-trivial or multi-area)
+5. On large PR → code-review (terminal; --comment only if asked)
+```
+
+## Prompt templates
+
+```text
+Run 2 explore agents in parallel: (1) [existing patterns for X], (2) [tests covering X]. Summarize reuse vs new code.
+
+/pr-review tests errors types parallel — scope: git diff main. Critical and important only.
+
+Use code-review on PR #N. Terminal only unless I ask for --comment.
+
+Shell agent: reproduce [failing step] with minimal overrides. Explore agent: trace [config/data path].
+```
+
+## Orchestration rules
+
+- Prefer **`explore`** for read-only codebase search; **`shell`** for repro/commands; **`generalPurpose`** only when exploration plus edits are needed in isolation
+- Parallelize **independent read-only** work; serialize **writes, commits, and verification**
+- Subagent output must be actionable (paths, commands, severity) — not raw dumps
+- After subagents finish, main agent owns the single coherent plan and diff

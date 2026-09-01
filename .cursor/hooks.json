@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "type": "prompt",
+        "prompt": "Inject these session guardrails into context and follow them for the whole session: Think before coding; goal-driven verified steps; surgical changes only; simplicity first; Conventional Commits; never commit secrets or update git config; prefer small staged delivery. Input: $ARGUMENTS",
+        "timeout": 15
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": ".cursor/hooks/block-destructive-git.py",
+        "matcher": "git"
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": ".cursor/hooks/remind-docs-after-edit.py"
+      }
+    ]
+  }
+}

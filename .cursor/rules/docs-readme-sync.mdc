@@ -1,0 +1,12 @@
+---
+description: Keep README and docs in sync with user-facing code changes
+alwaysApply: true
+---
+
+# Docs and README Sync
+
+- After every code change, verify whether user-facing behavior, setup, commands, configuration, defaults, or workflows changed.
+- If any of the above changed, update `README.md` and any relevant docs in the same change.
+- Keep docs updates surgical and directly tied to the code diff; avoid unrelated rewrites.
+- If no docs update is needed, explicitly confirm why in the final response.
+- Do not finish a task with stale examples, outdated flags, or mismatched terminology between code and docs.

@@ -1,0 +1,22 @@
+---
+description: Enforce DRY (Don't Repeat Yourself) with context-aware reuse
+alwaysApply: true
+---
+
+# DRY Principle
+
+- Eliminate true duplication in logic, validation rules, and domain constants.
+- Centralize repeated behavior only when semantics are truly the same.
+- Avoid premature abstraction for one-off code or coincidental similarity.
+- Prefer small shared helpers over copy/paste divergence.
+
+## True vs fake duplication
+
+- **True duplication**: same business rule, same invariants, same ownership, same lifecycle.
+- **Fake duplication**: similar code shape but different context/constraints.
+
+## Review checklist
+
+- Is this repeated logic semantically identical?
+- Will a shared abstraction reduce maintenance risk?
+- Would extraction introduce confusing coupling?

@@ -1,0 +1,17 @@
+---
+description: Enforce Dependency Inversion Principle (DIP)
+alwaysApply: true
+---
+
+# Dependency Inversion Principle (DIP)
+
+- High-level policy code should depend on abstractions, not concrete details.
+- Inject infrastructure dependencies (IO, network, DB, framework runtime) behind interfaces/adapters.
+- Keep framework-specific code at boundaries.
+- Avoid direct construction of concrete dependencies inside core logic when injection is practical.
+
+## Review checklist
+
+- Does core logic import concrete infra classes directly?
+- Can this dependency be inverted via protocol/interface + adapter?
+- Are side-effecting dependencies isolated at boundaries?

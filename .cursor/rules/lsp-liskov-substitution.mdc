@@ -1,0 +1,17 @@
+---
+description: Enforce Liskov Substitution Principle (LSP)
+alwaysApply: true
+---
+
+# Liskov Substitution Principle (LSP)
+
+- Subtypes/implementations must be safely usable anywhere the base contract is expected.
+- Do not narrow accepted inputs or strengthen preconditions in implementations.
+- Do not weaken guarantees or change expected semantics in overridden behavior.
+- Keep error behavior and side effects consistent with interface expectations.
+
+## Review checklist
+
+- Can the new implementation replace existing one without caller changes?
+- Are method contracts (inputs/outputs/errors) still honored?
+- Are edge-case behaviors compatible with the abstraction?

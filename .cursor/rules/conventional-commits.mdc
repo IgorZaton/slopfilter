@@ -1,0 +1,47 @@
+---
+description: Use Conventional Commits for commit messages and PR titles
+alwaysApply: true
+---
+
+# Conventional Commits
+
+Use [Conventional Commits](https://www.conventionalcommits.org/) for **every** suggested or drafted commit message and PR title.
+
+## Format
+
+```text
+<type>(<optional-scope>): <short imperative description>
+```
+
+- **Type** is required; **scope** is optional but preferred when it clarifies the area (`api`, `ui`, `config`, `deps`, `ci`, `docs`).
+- Description: imperative mood, lowercase after the colon, no trailing period, ~72 chars or less for the subject line.
+
+## Allowed types (use the closest fit)
+
+| Type | Use for |
+|------|---------|
+| `feat` | New user-visible behavior or capability |
+| `fix` | Bug fixes |
+| `refactor` | Internal change without intended behavior change |
+| `perf` | Performance improvements |
+| `test` | Tests only |
+| `docs` | Documentation only |
+| `chore` | Maintenance, tooling, ignores, formatting unrelated to product logic |
+| `build` | Build system or packaging |
+| `ci` | CI configuration |
+
+## Examples
+
+```text
+feat(api): add pagination to list endpoints
+fix(auth): reject expired refresh tokens
+refactor(ui): extract shared form validation
+docs(readme): document local setup commands
+chore(deps): bump lint tooling
+```
+
+## Do not
+
+- Use vague subjects (`update`, `fix stuff`, `changes`).
+- Omit the type prefix for commits or PR titles you propose.
+- Add `Co-authored-by`, `generated-by`, or assistant attribution trailers to commit messages.

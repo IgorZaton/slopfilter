@@ -1,0 +1,10 @@
+---
+description: Release workflow and scope for release notes and PR descriptions
+alwaysApply: true
+---
+
+# Release Process
+
+- Always run `git pull` on the target branch before creating a release to ensure the local branch reflects the latest merged changes.
+- Release notes, commit messages, and PR descriptions must only cover changes to the repository — features, fixes, and user-facing docs.
+- Never mention local settings, workflow rules, process instructions, or tooling configuration in release notes, commits, or PR descriptions.

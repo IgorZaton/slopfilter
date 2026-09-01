@@ -1,0 +1,12 @@
+---
+description: Split work into independently verifiable stages with checks and commits
+alwaysApply: true
+---
+
+# Small Staged Delivery
+
+- When planning implementation work, split it into the smallest separate stages that are still functional and independently verifiable.
+- Each stage should produce a coherent working state, not a partial broken checkpoint.
+- After each stage, run the smallest relevant test/check that verifies that stage.
+- Commit after each verified stage before starting the next one, unless the user explicitly asks not to commit.
+- Keep stage scope narrow enough that failures are easy to isolate and commits remain reviewable.

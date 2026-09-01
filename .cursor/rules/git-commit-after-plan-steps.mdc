@@ -1,0 +1,21 @@
+---
+description: After major planned implementation steps, suggest git commands to commit work
+alwaysApply: true
+---
+
+# Git commits after planning-mode milestones
+
+When work completes a **meaningful milestone** that followed **planning mode** (a discrete step from an accepted plan, or a coherent feature slice), **before closing the turn**:
+
+1. **Summarize** what changed at a high level (scope + main files).
+2. **Give ready-to-run git commands** so the user can record that milestone:
+   - Review: `git status` and optionally `git diff --stat`
+   - Stage: `git add` with explicit paths or scoped globs (avoid `git add .` unless the change set is truly everything touched)
+   - Commit: `git commit -m "type: short imperative summary"`  
+     Use a conventional prefix when it fits: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`.
+
+3. If multiple logical commits would improve history, **split** into 2–3 suggested commits with distinct messages instead of one giant commit.
+
+4. Do **not** run `git commit` unless the user explicitly asked you to commit.
+
+This complements surgical edits: each “big step” should leave the user with a clear, copy-paste path to version control.
